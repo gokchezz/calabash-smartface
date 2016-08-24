@@ -6,7 +6,7 @@ Gem::Specification.new do |s|
   s.description = "predefined calabash steps for Smartface apps"
   s.authors     = ["Gokce Akcan"]
   s.email       = 'gokce@akcan.net'
-  s.files       = ["lib/calabash_ios_steps.rb" "lib/calabash_steps.rb" "lib/common_steps.rb"]
+  s.files       = ["lib/calabash_ios_steps.rb", "lib/calabash_steps.rb", "lib/common_steps.rb"]
   s.homepage    =
     'https://github.com/gokchezz/calabash-smartface'
   s.license       = 'Smartface'
