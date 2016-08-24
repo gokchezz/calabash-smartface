@@ -2,7 +2,6 @@ require 'rspec'
 require 'mojo_magick'
 require 'ADB'
 require 'pp'
-require_relative 'common_steps'
 
 include ADB
 

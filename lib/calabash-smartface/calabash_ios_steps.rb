@@ -1,7 +1,6 @@
 require 'rspec'
 require 'mojo_magick'
 require 'pp'
-require_relative 'common_steps'
 
 def do_before_scenario
   $screencap_index = 0
