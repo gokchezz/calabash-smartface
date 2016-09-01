@@ -6,7 +6,7 @@ require 'pp'
 include ADB
 
 def append_date(name)
-  (name +'_'+ Time.now.strftime('%e%b').strip)
+  (name +'_'+ Time.now.strftime('%d%b').strip)
 end
 
 def get_device(serial)
