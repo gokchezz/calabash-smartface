@@ -189,12 +189,8 @@ end
 
 And(/^I take a screenshot called "([^"]*)"$/) do |file_name|
   device = get_device(ENV["ADB_DEVICE_ARG"])
-  p "------------------**************************-----------------"
-  p "#{Time.now.strftime('%d%b')}"
-  
   screenshot_embed({:name => "#{device[:model]}/#{file_name}_#{Time.now.strftime('%d%b')}"})
   screenshot_file = Dir["screenshots/#{Time.now.strftime('%d%b')}/#{device[:serial]}_#{device[:model]}/#{file_name}**.png"][0]
-  p "#{screenshot_file}"
   do_crop_on_screenshot(device, screenshot_file)
 end
 
