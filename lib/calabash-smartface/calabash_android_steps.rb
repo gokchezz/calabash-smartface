@@ -2,6 +2,7 @@ require 'rspec'
 require 'mojo_magick'
 require 'ADB'
 require 'pp'
+require 'save_results'
 
 include ADB
 
@@ -17,7 +18,18 @@ def get_device(serial)
   end
 end
 
+def increase_error_count
+  $error_count += 1
+end
+
+def increase_case_count
+  $case_count += 1
+end
+
 def do_before_scenario
+  $case_count = 0
+  $error_count = 0
+  $start_time = Time.now.strftime('%H:%M:%S')
   $failure_id = 0
   $devices = []
   sn = ADB.devices
@@ -49,6 +61,12 @@ def do_crop_on_screenshot(device, screenshot_file)
     end
     MojoMagick::raw_command('convert', "#{screenshot_file} -chop 0x#{crop}% #{screenshot_file}")
   end
+end
+
+def save_results_to_file(root_path, test_name)
+  device = get_device(ENV["ADB_DEVICE_ARG"])
+  report_file = "#{root_path}/#{test_name}/html_reports/#{device[:model].gsub('-', '_')}_#{test_name}_#{Time.now.strftime('%d%b')}_report.html"
+  save_results(root_path, device[:model], $case_count, $start_time, $error_count, "#{report_file}")
 end
 
 Given(/^I wait upto (\d+) seconds for the app to start$/) do |sec|
@@ -200,15 +218,18 @@ And(/^I compare screenshot called "([^"]*)"$/) do |file_name|
   control_file = "control_images/#{device[:model]}/#{file_name}.png"
   compare_result = MojoMagick::execute('compare', %Q[-metric MAE -format "%[distortion]" #{control_file} #{screenshot_file} control_images/NULL])[:error]
   if compare_result[/\(.*?\)/].nil?
+    $error_count += 1
     fail(compare_result)
   else
     compare_result = compare_result[/\(.*?\)/]
     compare_result = compare_result[1..compare_result.length-2]
     p compare_result.to_f
     if compare_result.to_f >= 0.00005
+      $error_count += 1
       fail("Screenshot comparision throw an error. Comparision result (#{compare_result}) was expected less than 0.00005")
     end
   end
+  $case_count += 1
   #expect(compare_result.to_f).to be < 0.00005
 end
 
@@ -288,6 +309,7 @@ And(/^I compare location with lat "([^"]*)" and long "([^"]*)"$/) do |lat, long|
   phone_long = arr[3]
   expect(phone_lat[0..5]).to eq lat
   expect(phone_long[0..5]).to eq long
+  $case_count += 1
 end
 
 Then(/^I press "([^"]*)" button value of "([^"]*)" times and I take control images$/) do |btn_txt, element|
@@ -322,9 +344,11 @@ Then(/^I press "([^"]*)" button value of "([^"]*)" times and I compare screensho
     compare_result = compare_result[1..compare_result.length-2]
     p compare_result.to_f
     if compare_result.to_f >= 0.00005
+      $error_count += 1
       fail("Screenshot comparision throw an error. Comparision result (#{compare_result}) was expected less than 0.00005")
     end
     i += 1
+    $case_count += 1
   end
 end
 
