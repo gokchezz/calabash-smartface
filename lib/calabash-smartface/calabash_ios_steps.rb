@@ -3,6 +3,9 @@ require 'mojo_magick'
 require 'pp'
 
 def do_before_scenario
+  $case_count = 0
+  $error_count = 0
+  $start_time = Time.now.strftime('%H:%M:%S')
   $screencap_index = 0
   FileUtils.mkdir_p("screenshots/#{Time.now.strftime('%d%b')}")
   FileUtils.mkdir_p("html_reports")
@@ -52,8 +55,11 @@ And(/^I compare location with lat "([^"]*)" and long "([^"]*)"$/) do |lat, long|
   arr = location.split
   phone_lat = arr[1]
   phone_long = arr[3]
-  expect(phone_lat[0..5]).to eq lat
-  expect(phone_long[0..5]).to eq long
+  $case_count += 1
+  if (phone_lat[0..5] != lat) || (phone_long[0..5] != long)
+    $error_count += 1
+    fail("Location did not match with expected result")
+  end
 end
 
 And(/^I compare screenshot called "([^"]*)"$/) do |file_name|
@@ -63,7 +69,11 @@ And(/^I compare screenshot called "([^"]*)"$/) do |file_name|
   compare_result = compare_result[/\(.*?\)/]
   compare_result = compare_result[1..compare_result.length-2]
   p compare_result.to_f
-  expect(compare_result.to_f).to be < 0.00005
+  $case_count += 1
+  if compare_result.to_f >= 0.00005
+    $error_count += 1
+    fail("Screenshot comparision throw an error. Comparision result (#{compare_result}) was expected less than 0.00005")
+  end
 end
 
 And(/^I wait up to (\d+) seconds to see "([^"]*)" button$/) do |time, btn_txt|
