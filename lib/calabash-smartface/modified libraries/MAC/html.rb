@@ -25,7 +25,7 @@ module Cucumber
         @delayed_messages = []
         @img_id = 0
         @inside_outline = false
-		@previous_control_image = nil
+		  @previous_control_image = nil
       end
 
       def embed(src, mime_type, label)

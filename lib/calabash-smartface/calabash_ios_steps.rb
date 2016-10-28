@@ -66,6 +66,7 @@ And(/^I compare screenshot called "([^"]*)"$/) do |file_name|
   screenshot_file = Dir["screenshots/#{Time.now.strftime('%d%b')}/#{file_name}**.png"][0]
   control_file = "control_images/#{file_name}.png"
   compare_result = MojoMagick::execute('compare', %Q[-metric MAE -format "%[distortion]" #{control_file} #{screenshot_file} control_images/NULL])[:error]
+  p compare_result
   compare_result = compare_result[/\(.*?\)/]
   compare_result = compare_result[1..compare_result.length-2]
   p compare_result.to_f
