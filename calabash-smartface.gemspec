@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.name        = 'calabash-smartface'
-  s.version     = '0.0.4'
-  s.date        = '2016-10-28'
+  s.version     = '0.1.0'
+  s.date        = '2016-10-31'
   s.summary     = "Calabash steps for Smartface"
   s.description = "predefined calabash steps for Smartface apps"
   s.authors     = ["Gokce Akcan"]

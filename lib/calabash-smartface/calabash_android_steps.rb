@@ -18,8 +18,12 @@ def get_device(serial)
   end
 end
 
-def increase_error_count
-  $error_count += 1
+def increase_error_count(screenshot_file)
+  $errors << screenshot_file
+end
+
+def get_error_count
+  $errors.length
 end
 
 def increase_case_count
@@ -28,7 +32,7 @@ end
 
 def do_before_scenario
   $case_count = 0
-  $error_count = 0
+  $errors = []
   $start_time = Time.now.strftime('%H:%M:%S')
   $failure_id = 0
   $devices = []
@@ -41,6 +45,11 @@ def do_before_scenario
     FileUtils.mkdir_p('html_reports')
     FileUtils.mkdir_p("control_images/#{model}")
   end
+end
+
+def do_after_scenario
+  p "Test ended with #{$errors.length} error(s)"
+  p "#{$case_count} cases run totally"
 end
 
 def do_crop_on_screenshot(device, screenshot_file)
@@ -67,7 +76,7 @@ def save_results_to_file(root_path, test_name)
   device = get_device(ENV["ADB_DEVICE_ARG"])
   version = get_os_version
   report_file = "#{root_path}/#{test_name}/html_reports/#{device[:model].gsub('-', '_')}_#{test_name}_#{Time.now.strftime('%d%b')}_report.html"
-  save_results(root_path, "#{device[:model]} - Android v.#{version}", $case_count, $start_time, $error_count, "#{report_file}")
+  save_results(root_path, "#{device[:model]} - Android v.#{version} - #{test_name}", $case_count, $start_time, $errors.length, "#{report_file}")
 end
 
 def get_os_version
@@ -122,30 +131,6 @@ Then(/^I wait (\d+) seconds to see "([^"]*)" text$/) do |time, txt|
   end
 end
 
-# And(/^I crop (\d+)% from "([^"]*)" of screenshot called "([^"]*)"$/) do |number, direction, file_name|
-#   device = get_device(ENV["ADB_DEVICE_ARG"])
-#   files = Dir["screenshots/#{Time.now.strftime('%d%b')}/#{device[:serial]}_#{device[:model]}/#{file_name}**.png"]
-#   case direction
-#     when 'top'
-#       MojoMagick::raw_command('convert', "#{files[files.length-1]} -chop 0x#{number.to_i}% #{files[files.length-1]}")
-#     when 'bottom'
-#       MojoMagick::raw_command('convert', "#{files[files.length-1]} -gravity South -chop 0x#{number.to_i}% #{files[files.length-1]}")
-#     else
-#   end
-# end
-#
-# And(/^I crop (\d+)% from "([^"]*)" of control image called "([^"]*)"$/) do |number, direction, file_name|
-#   device = get_device(ENV["ADB_DEVICE_ARG"])
-#   files = Dir["control_images/#{device[:model]}/#{file_name}**.png"]
-#   case direction
-#     when 'top'
-#       MojoMagick::raw_command('convert', "#{files[files.length-1]} -chop 0x#{number.to_i}% #{files[files.length-1]}")
-#     when 'bottom'
-#       MojoMagick::raw_command('convert', "#{files[files.length-1]} -gravity South -chop 0x#{number.to_i}% #{files[files.length-1]}")
-#     else
-#   end
-# end
-
 Then(/^I press "([^"]*)" button (\d+) times and compare screenshots$/) do |btn_txt, n|
   i = 1
   device = get_device(ENV["ADB_DEVICE_ARG"])
@@ -161,11 +146,9 @@ Then(/^I press "([^"]*)" button (\d+) times and compare screenshots$/) do |btn_t
     compare_result = compare_result[1..compare_result.length-2]
     p compare_result.to_f
     if compare_result.to_f >= 0.00005
-      # screenshot_embed({:name => "#{device[:model]}/#{btn_txt}#{append_date("_button_pressed")}}"})
-      # do_crop_on_screenshot(device, screenshot_file)
-      fail("Screenshot comparision throw an error. Comparision result (#{compare_result}) was expected less than 0.00005")
+      $errors << screenshot_file
+      p("Screenshot comparision throw an error. Comparision result (#{compare_result}) was expected less than 0.00005")
     end
-    #expect(compare_result.to_f).to be < 0.00005
     i += 1
   end
 end
@@ -186,11 +169,9 @@ Then(/^I press "([^"]*)" with index (\d+), (\d+) times and compare screenshots c
     compare_result = compare_result[1..compare_result.length-2]
     p compare_result.to_f
     if compare_result.to_f >= 0.00005
-      # screenshot_embed({:name => "#{device[:model]}/#{append_date("#{screenshot_name}")}"})
-      # do_crop_on_screenshot(device, screenshot_file)
-      fail("Screenshot comparision throw an error. Comparision result (#{compare_result}) was expected less than 0.00005")
+      $errors << files[0]
+      p("Screenshot comparision throw an error. Comparision result (#{compare_result}) was expected less than 0.00005")
     end
-    #expect(compare_result.to_f).to be < 0.00005
     i += 1
   end
 end
@@ -224,19 +205,18 @@ And(/^I compare screenshot called "([^"]*)"$/) do |file_name|
   control_file = "control_images/#{device[:model]}/#{file_name}.png"
   compare_result = MojoMagick::execute('compare', %Q[-metric MAE -format "%[distortion]" #{control_file} #{screenshot_file} control_images/NULL])[:error]
   if compare_result[/\(.*?\)/].nil?
-    $error_count += 1
-    fail(compare_result)
+    $errors << screenshot_file
+    p compare_result
   else
     compare_result = compare_result[/\(.*?\)/]
     compare_result = compare_result[1..compare_result.length-2]
     p compare_result.to_f
     if compare_result.to_f >= 0.00005
-      $error_count += 1
-      fail("Screenshot comparision throw an error. Comparision result (#{compare_result}) was expected less than 0.00005")
+      $errors << screenshot_file
+      p("Screenshot comparision throw an error. Comparision result (#{compare_result}) was expected less than 0.00005")
     end
   end
   $case_count += 1
-  #expect(compare_result.to_f).to be < 0.00005
 end
 
 And(/^I hide keyboard$/) do
@@ -350,8 +330,8 @@ Then(/^I press "([^"]*)" button value of "([^"]*)" times and I compare screensho
     compare_result = compare_result[1..compare_result.length-2]
     p compare_result.to_f
     if compare_result.to_f >= 0.00005
-      $error_count += 1
-      fail("Screenshot comparision throw an error. Comparision result (#{compare_result}) was expected less than 0.00005")
+      $errors << screenshot_file
+      p("Screenshot comparision throw an error. Comparision result (#{compare_result}) was expected less than 0.00005")
     end
     i += 1
     $case_count += 1
