@@ -76,7 +76,7 @@ def save_results_to_file(root_path, test_name)
   device = get_device(ENV["ADB_DEVICE_ARG"])
   version = get_os_version
   report_file = "#{root_path}/#{test_name}/html_reports/#{device[:model].gsub('-', '_')}_#{test_name}_#{Time.now.strftime('%d%b')}_report.html"
-  save_results(root_path, "#{device[:model]} - Android v.#{version} - #{test_name}", $case_count, $start_time, $errors.length, "#{report_file}")
+  save_results_on_existing_file(root_path, "#{device[:model]} - Android v.#{version} - #{test_name}", $case_count, $start_time, $errors.length, "#{report_file}")
 end
 
 def get_os_version

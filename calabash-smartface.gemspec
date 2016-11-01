@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.name        = 'calabash-smartface'
-  s.version     = '0.1.0'
-  s.date        = '2016-10-31'
+  s.version     = '0.1.1'
+  s.date        = '2016-11-01'
   s.summary     = "Calabash steps for Smartface"
   s.description = "predefined calabash steps for Smartface apps"
   s.authors     = ["Gokce Akcan"]
@@ -9,5 +9,5 @@ Gem::Specification.new do |s|
   s.files       = ["lib/calabash-smartface.rb", "lib/calabash-smartface/calabash_android_steps.rb", "lib/calabash-smartface/calabash_ios_steps.rb"]
   s.homepage    =
     'https://github.com/gokchezz/calabash-smartface'
-  s.license       = 'Smartface'
+  s.license       = 'Nonstandard'
 end
