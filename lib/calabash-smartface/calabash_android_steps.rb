@@ -34,7 +34,6 @@ def do_before_scenario
   $case_count = 0
   $errors = []
   $start_time = Time.now.strftime('%H:%M:%S')
-  $failure_id = 0
   $devices = []
   sn = ADB.devices
   sn.each do |serial|
@@ -48,8 +47,9 @@ def do_before_scenario
 end
 
 def do_after_scenario
-  p "Test ended with #{$errors.length} error(s)"
   p "#{$case_count} cases run totally"
+  p "Test ended with #{$errors.length} error(s)"
+  raise "Test ended with #{$errors.length} error(s)" if $errors.length > 0
 end
 
 def do_crop_on_screenshot(device, screenshot_file)
@@ -64,6 +64,8 @@ def do_crop_on_screenshot(device, screenshot_file)
       when "GT-I9300"
         crop = 4
       when "LG-D802"
+        crop = 4
+      when "GT-I9190"
         crop = 4
       else
         crop = 3

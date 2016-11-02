@@ -3,12 +3,42 @@ require 'mojo_magick'
 require 'pp'
 
 def do_before_scenario
+  $device = {:name => 'iPhone6sPlus', :version => '10.0.2', :udid => '1ef7407a2f68c0bf7adbca9eb2c18c4e8fde17a8'}
   $case_count = 0
-  $error_count = 0
+  $errors = []
   $start_time = Time.now.strftime('%H:%M:%S')
   $screencap_index = 0
   FileUtils.mkdir_p("screenshots/#{Time.now.strftime('%d%b')}")
   FileUtils.mkdir_p("html_reports")
+end
+
+def increase_error_count(screenshot_file)
+  $errors << screenshot_file
+end
+
+def get_error_count
+  $errors.length
+end
+
+def increase_case_count
+  $case_count += 1
+end
+
+def do_after_scenario
+  p "#{$case_count} cases run totally"
+  p "Test ended with #{$errors.length} error(s)"
+  raise "Test ended with #{$errors.length} error(s)" if $errors.length > 0
+end
+
+def save_results_to_file(root_path, test_name)
+  device = $device[:name]
+  version = $device[:version]
+  report_file = "#{root_path}/#{test_name}/html_reports/#{test_name}_#{Time.now.strftime('%Y-%m-%d')}.html"
+  save_results_on_existing_file(root_path, "#{device} - #{version} - #{test_name}", $case_count, $start_time, $errors.length, "#{report_file}")
+end
+
+def get_device
+  $device
 end
 
 def hide_soft_keyboard
@@ -57,8 +87,10 @@ And(/^I compare location with lat "([^"]*)" and long "([^"]*)"$/) do |lat, long|
   phone_long = arr[3]
   $case_count += 1
   if (phone_lat[0..5] != lat) || (phone_long[0..5] != long)
-    $error_count += 1
-    fail("Location did not match with expected result")
+    screenshot_embed(options = {:name => "screenshots/#{Time.now.strftime("%d%b")}/location_error.png"})
+    screenshot_file = Dir["screenshots/#{Time.now.strftime('%d%b')}/location_error**.png"][0]
+    $errors << screenshot_file
+    p("Location did not match with expected result")
   end
 end
 
@@ -72,8 +104,8 @@ And(/^I compare screenshot called "([^"]*)"$/) do |file_name|
   p compare_result.to_f
   $case_count += 1
   if compare_result.to_f >= 0.00005
-    $error_count += 1
-    fail("Screenshot comparision throw an error. Comparision result (#{compare_result}) was expected less than 0.00005")
+    $errors << screenshot_file
+    p("Screenshot comparision throw an error. Comparision result (#{compare_result}) was expected less than 0.00005")
   end
 end
 
