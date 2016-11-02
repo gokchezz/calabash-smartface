@@ -1,6 +1,7 @@
 require 'rspec'
 require 'mojo_magick'
 require 'pp'
+require 'save_results'
 
 def do_before_scenario
   $device = {:name => 'iPhone6sPlus', :version => '10.0.2', :udid => '1ef7407a2f68c0bf7adbca9eb2c18c4e8fde17a8'}
