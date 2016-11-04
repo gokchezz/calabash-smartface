@@ -46,6 +46,14 @@ def hide_soft_keyboard
   touch("SpBrPageViewIOS")
 end
 
+Given(/^I wait upto (\d+) seconds for application to start$/) do |sec|
+  start_time = Time.now
+  while true do
+    break if Time.now - start_time >= sec.to_i
+    break if !query("SpBrPageViewIOS").empty?
+  end
+end
+
 Then(/^I enter "([^"]*)"$/) do |str|
   touch("SpBrUISingleLineEditBoxIPhone marked:'TextBox'")
   wait_for_keyboard
@@ -99,7 +107,6 @@ And(/^I compare screenshot called "([^"]*)"$/) do |file_name|
   screenshot_file = Dir["screenshots/#{Time.now.strftime('%d%b')}/#{file_name}**.png"][0]
   control_file = "control_images/#{file_name}.png"
   compare_result = MojoMagick::execute('compare', %Q[-metric MAE -format "%[distortion]" #{control_file} #{screenshot_file} control_images/NULL])[:error]
-  p compare_result
   compare_result = compare_result[/\(.*?\)/]
   compare_result = compare_result[1..compare_result.length-2]
   p compare_result.to_f
@@ -168,11 +175,40 @@ And(/^I pinch to zoom "([^"]*)" on "([^"]*)"$/) do |direction, class_name|
   pinch direction.to_sym, query:"#{class_name}" #todo bu metod calismadi tekrar yazilcak
 end
 
-Given(/^I wait upto (\d+) seconds for application to start$/) do |sec|
-  start_time = Time.now
-  while true do
-    break if Time.now - start_time >= sec.to_i
-    break if !query("SpBrPageViewIOS").empty?
+Then(/^I press "([^"]*)" button value of "([^"]*)" times and I take control images$/) do |btn_txt, element|
+  n = query("#{element}", :text)[0]
+  i = 1
+  n.to_i.times do
+    touch(query("* UIButtonLabel marked:'#{btn_txt}'"))
+    sleep 0.5
+    screenshot(options = {:name => "screenshots/#{Time.now.strftime("%d%b")}/#{btn_txt}#{append_date("_button_pressed")}_#{i}.png"})
+    screenshot_file = Dir["screenshots/#{Time.now.strftime('%d%b')}/#{btn_txt}#{append_date("_button_pressed")}_#{i}**.png"][0]
+    control_file = "control_images/#{btn_txt}_button_pressed_#{i}.png"
+    File.rename(screenshot_file, control_file)
+    i += 1
   end
 end
+
+Then(/^I press "([^"]*)" button value of "([^"]*)" times and I compare screenshots$/) do |btn_txt, element|
+  n = query("#{element}", :text)[0]
+  i = 1
+  n.to_i.times do
+    touch(query("* UIButtonLabel marked:'#{btn_txt}'"))
+    sleep 0.5
+    screenshot_embed(options = {:name => "screenshots/#{Time.now.strftime("%d%b")}/#{btn_txt}#{append_date("_button_pressed")}_#{i}.png"})
+    control_file = "control_images/#{btn_txt}_button_pressed_#{i}.png"
+    screenshot_file = Dir["screenshots/#{Time.now.strftime('%d%b')}/#{btn_txt}#{append_date("_button_pressed")}_#{i}**.png"][0]
+    compare_result = MojoMagick::execute('compare', %Q[-metric MAE -format "%[distortion]" #{control_file} #{screenshot_file} control_images/NULL])[:error]
+    compare_result = compare_result[/\(.*?\)/]
+    compare_result = compare_result[1..compare_result.length-2]
+    p compare_result.to_f
+    if compare_result.to_f >= 0.00005
+      $errors << screenshot_file
+      p("Screenshot comparision throw an error. Comparision result (#{compare_result}) was expected less than 0.00005")
+    end
+    i += 1
+    $case_count += 1
+  end
+end
+
 
