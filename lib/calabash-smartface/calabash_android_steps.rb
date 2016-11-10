@@ -18,8 +18,8 @@ def get_device(serial)
   end
 end
 
-def increase_error_count(screenshot_file)
-  $errors << screenshot_file
+def increase_error_count(test_name)
+  $errors << test_name
 end
 
 def get_error_count
@@ -77,7 +77,7 @@ end
 def save_results_to_file(root_path, test_name)
   device = get_device(ENV["ADB_DEVICE_ARG"])
   version = get_os_version
-  report_file = "#{root_path}/#{test_name}/html_reports/#{device[:model].gsub('-', '_')}_#{test_name}_#{Time.now.strftime('%d%b')}_report.html"
+  report_file = "https://smartfacecdn.blob.core.windows.net/test-automation/#{Time.now.strftime('%d-%m-%y')}/#{test_name}%20on%20#{device[:model]}.html"
   save_results_on_existing_file(root_path, "#{device[:model]} - Android v.#{version} - #{test_name}", $case_count, $start_time, $errors.length, "#{report_file}")
 end
 
@@ -148,7 +148,7 @@ Then(/^I press "([^"]*)" button (\d+) times and compare screenshots$/) do |btn_t
     compare_result = compare_result[1..compare_result.length-2]
     p compare_result.to_f
     if compare_result.to_f >= 0.00005
-      $errors << screenshot_file
+      $errors << "#{btn_txt}_button_pressed_#{i}"
       p("Screenshot comparision throw an error. Comparision result (#{compare_result}) was expected less than 0.00005")
     end
     i += 1
@@ -171,7 +171,7 @@ Then(/^I press "([^"]*)" with index (\d+), (\d+) times and compare screenshots c
     compare_result = compare_result[1..compare_result.length-2]
     p compare_result.to_f
     if compare_result.to_f >= 0.00005
-      $errors << files[0]
+      $errors << screenshot_name
       p("Screenshot comparision throw an error. Comparision result (#{compare_result}) was expected less than 0.00005")
     end
     i += 1
@@ -207,14 +207,14 @@ And(/^I compare screenshot called "([^"]*)"$/) do |file_name|
   control_file = "control_images/#{device[:model]}/#{file_name}.png"
   compare_result = MojoMagick::execute('compare', %Q[-metric MAE -format "%[distortion]" #{control_file} #{screenshot_file} control_images/NULL])[:error]
   if compare_result[/\(.*?\)/].nil?
-    $errors << screenshot_file
+    $errors << file_name
     p compare_result
   else
     compare_result = compare_result[/\(.*?\)/]
     compare_result = compare_result[1..compare_result.length-2]
     p compare_result.to_f
     if compare_result.to_f >= 0.00005
-      $errors << screenshot_file
+      $errors << file_name
       p("Screenshot comparision throw an error. Comparision result (#{compare_result}) was expected less than 0.00005")
     end
   end
@@ -332,7 +332,7 @@ Then(/^I press "([^"]*)" button value of "([^"]*)" times and I compare screensho
     compare_result = compare_result[1..compare_result.length-2]
     p compare_result.to_f
     if compare_result.to_f >= 0.00005
-      $errors << screenshot_file
+      $errors << "#{btn_txt}_button_pressed_#{i}"
       p("Screenshot comparision throw an error. Comparision result (#{compare_result}) was expected less than 0.00005")
     end
     i += 1

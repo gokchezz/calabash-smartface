@@ -13,8 +13,8 @@ def do_before_scenario
   FileUtils.mkdir_p("html_reports")
 end
 
-def increase_error_count(screenshot_file)
-  $errors << screenshot_file
+def increase_error_count(test_name)
+  $errors << test_name
 end
 
 def get_error_count
@@ -98,7 +98,7 @@ And(/^I compare location with lat "([^"]*)" and long "([^"]*)"$/) do |lat, long|
   if (phone_lat[0..5] != lat) || (phone_long[0..5] != long)
     screenshot_embed(options = {:name => "screenshots/#{Time.now.strftime("%d%b")}/location_error.png"})
     screenshot_file = Dir["screenshots/#{Time.now.strftime('%d%b')}/location_error**.png"][0]
-    $errors << screenshot_file
+    $errors << 'location_error'
     p("Location did not match with expected result")
   end
 end
@@ -112,7 +112,7 @@ And(/^I compare screenshot called "([^"]*)"$/) do |file_name|
   p compare_result.to_f
   $case_count += 1
   if compare_result.to_f >= 0.00005
-    $errors << screenshot_file
+    $errors << file_name
     p("Screenshot comparision throw an error. Comparision result (#{compare_result}) was expected less than 0.00005")
   end
 end
@@ -203,7 +203,7 @@ Then(/^I press "([^"]*)" button value of "([^"]*)" times and I compare screensho
     compare_result = compare_result[1..compare_result.length-2]
     p compare_result.to_f
     if compare_result.to_f >= 0.00005
-      $errors << screenshot_file
+      $errors << "#{btn_txt}_button_pressed_#{i}"
       p("Screenshot comparision throw an error. Comparision result (#{compare_result}) was expected less than 0.00005")
     end
     i += 1

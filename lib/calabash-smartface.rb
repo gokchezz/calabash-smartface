@@ -1,3 +1,9 @@
+require 'make_report'
+
+def save_report_on_azure(reference_path, screenshot_path, test_name)
+  prepare_report(reference_path, screenshot_path, test_name, $errors)
+end
+
 And(/^I wait (\d+) seconds$/) do |number|
   sleep number.to_i
 end
