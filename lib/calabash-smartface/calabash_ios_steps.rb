@@ -4,7 +4,7 @@ require 'pp'
 require 'save_results'
 
 def do_before_scenario
-  $device = {:name => 'iPhone6sPlus', :version => '10.0.2', :udid => '1ef7407a2f68c0bf7adbca9eb2c18c4e8fde17a8'}
+  $device = {:name => default_device.form_factor, :version => default_device.ios_version}
   $case_count = 0
   $errors = []
   $start_time = Time.now.strftime('%H:%M:%S')
@@ -34,6 +34,7 @@ end
 def save_results_to_file(root_path, test_name)
   device = $device[:name]
   version = $device[:version]
+  report_file = "https://smartfacecdn.blob.core.windows.net/test-automation/#{Time.now.strftime('%d-%m-%y')}/#{test_name}%20on%20#{device.gsub(' ', '%20')}.html"
   report_file = "#{root_path}/#{test_name}/html_reports/#{test_name}_#{Time.now.strftime('%Y-%m-%d')}.html"
   save_results_on_existing_file(root_path, "#{device} - #{version} - #{test_name}", $case_count, $start_time, $errors.length, "#{report_file}")
 end
