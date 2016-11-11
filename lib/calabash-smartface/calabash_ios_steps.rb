@@ -35,7 +35,6 @@ def save_results_to_file(root_path, test_name)
   device = $device[:name]
   version = $device[:version]
   report_file = "https://smartfacecdn.blob.core.windows.net/test-automation/#{Time.now.strftime('%d-%m-%y')}/#{test_name}%20on%20#{device.gsub(' ', '%20')}.html"
-  report_file = "#{root_path}/#{test_name}/html_reports/#{test_name}_#{Time.now.strftime('%Y-%m-%d')}.html"
   save_results_on_existing_file(root_path, "#{device} - #{version} - #{test_name}", $case_count, $start_time, $errors.length, "#{report_file}")
 end
 
