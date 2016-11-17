@@ -1,7 +1,7 @@
 require 'make_report'
 
-def save_report_on_azure(reference_path, screenshot_path, test_name)
-  prepare_report(reference_path, screenshot_path, test_name, $errors)
+def save_report_on_azure(reference_path, screenshot_path, test_name, result_path, device_name)
+  prepare_report(reference_path, screenshot_path, test_name, $errors, result_path, device_name)
 end
 
 And(/^I wait (\d+) seconds$/) do |number|
