@@ -4,13 +4,13 @@ require 'pp'
 require 'save_results'
 
 def do_before_scenario
-  $device = {:name => default_device.form_factor, :version => default_device.ios_version}
+  $device = {:name => default_device.form_factor.tr(' ', '_'), :version => default_device.ios_version}
   $case_count = 0
   $errors = []
   $start_time = Time.now.strftime('%H:%M:%S')
   $screencap_index = 0
   FileUtils.mkdir_p("screenshots/#{Time.now.strftime('%d%b')}/#{$device[:name]}")
-  FileUtils.mkdir_p("html_reports")
+  FileUtils.mkdir_p("html_reports/#{$device[:name]}")
 end
 
 def increase_error_count(test_name)
