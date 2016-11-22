@@ -9,7 +9,12 @@ And(/^I wait (\d+) seconds$/) do |number|
 end
 
 Then(/^I touch "([^"]*)" with index (\d+)$/) do |class_name, index|
-  touch(query("#{class_name} index:#{index}"))
+  begin
+    touch(query("#{class_name} index:#{index}"))
+  rescue Exception => e
+    $errors << "No #{class_name} with index:#{index}"
+    p "No #{class_name} with index:#{index}"
+  end
 end
 
 And(/^I touch "([^"]*)" or "([^"]*)" or "([^"]*)" button$/) do |x, y, z|
@@ -19,7 +24,12 @@ And(/^I touch "([^"]*)" or "([^"]*)" or "([^"]*)" button$/) do |x, y, z|
 end
 
 Then(/^I touch any button with text "([^"]*)"$/) do |btn_txt|
-  touch("* marked:'#{btn_txt}'")
+  begin
+    touch("* marked:'#{btn_txt}'")
+  rescue Exception => e
+    $errors << "No * marked:#{btn_txt}"
+    p "No * marked:#{btn_txt}"
+  end
 end
 
 And(/^I long press "([^"]*)" button$/) do |btn_txt|
@@ -27,7 +37,12 @@ And(/^I long press "([^"]*)" button$/) do |btn_txt|
 end
 
 And(/^I touch "([^"]*)" with text "([^"]*)"$/) do |class_name, txt|
-  touch(query("* #{class_name} marked:'#{txt}'"))
+  begin
+    touch(query("* #{class_name} marked:'#{txt}'"))
+  rescue Exception => e
+    $errors << "No #{class_name} marked:#{txt}"
+    p "No #{class_name} marked:#{txt}"
+  end
 end
 
 And(/^I long press "([^"]*)" with text "([^"]*)"$/) do |class_name, txt|

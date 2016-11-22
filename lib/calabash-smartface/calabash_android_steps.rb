@@ -117,7 +117,12 @@ Then (/^I enter ([^"]*)$/) do |str|
 end
 
 And(/^I touch "([^"]*)" button$/) do |btn_txt|
-  touch("SpButton marked:'#{btn_txt}'")
+  begin
+    touch("SpButton marked:'#{btn_txt}'")
+  rescue Exception => e
+    $errors << "No button marked:#{btn_txt}"
+    p "No button marked:#{btn_txt}"
+  end
 end
 
 And(/^I wait up to (\d+) seconds to see "([^"]*)" button$/) do |time, btn_txt|

@@ -9,7 +9,7 @@ def do_before_scenario
   $errors = []
   $start_time = Time.now.strftime('%H:%M:%S')
   $screencap_index = 0
-  FileUtils.mkdir_p("screenshots/#{Time.now.strftime('%d%b')}")
+  FileUtils.mkdir_p("screenshots/#{Time.now.strftime('%d%b')}/#{$device[:name]}")
   FileUtils.mkdir_p("html_reports")
 end
 
@@ -82,17 +82,22 @@ Then(/^I enter "([^"]*)" in "([^"]*)" with index (\d+)$/) do |str, class_name, i
 end
 
 Then(/^I take control image called "([^"]*)"$/) do |file_name|
-  screenshot(options = {:prefix => "control_images", :name => "/#{file_name}.png"})
-  File.rename("control_images/#{file_name}_#{$screencap_index}.png", "control_images/#{file_name}.png")
+  screenshot(options = {:prefix => "control_images/#{$device[:name]}", :name => "/#{file_name}.png"})
+  File.rename("control_images/#{$device[:name]}/#{file_name}_#{$screencap_index}.png", "control_images/#{$device[:name]}/#{file_name}.png")
   $screencap_index += 1
 end
 
 Then(/^I take a screenshot called "([^"]*)"$/) do |file_name|
-  screenshot_embed(options = {:name => "screenshots/#{Time.now.strftime("%d%b")}/#{file_name}.png"})
+  screenshot_embed(options = {:name => "screenshots/#{Time.now.strftime("%d%b")}/#{$device[:name]}/#{file_name}.png"})
 end
 
 Then(/^I touch "([^"]*)" button$/) do |btn_txt|
-  touch("UIButtonLabel marked:'#{btn_txt}'")
+  begin
+    touch("UIButtonLabel marked:'#{btn_txt}'")
+  rescue Exception => e
+    $errors << "No label marked:#{btn_txt}"
+    p "No label marked:#{btn_txt}"
+  end
 end
 
 And(/^I compare location with lat "([^"]*)" and long "([^"]*)"$/) do |lat, long|
@@ -102,17 +107,17 @@ And(/^I compare location with lat "([^"]*)" and long "([^"]*)"$/) do |lat, long|
   phone_long = arr[3]
   $case_count += 1
   if (phone_lat[0..5] != lat) || (phone_long[0..5] != long)
-    screenshot_embed(options = {:name => "screenshots/#{Time.now.strftime("%d%b")}/location_error.png"})
-    screenshot_file = Dir["screenshots/#{Time.now.strftime('%d%b')}/location_error**.png"][0]
+    screenshot_embed(options = {:name => "screenshots/#{Time.now.strftime("%d%b")}/#{$device[:name]}/location_error.png"})
+    screenshot_file = Dir["screenshots/#{Time.now.strftime('%d%b')}/#{$device[:name]}/location_error**.png"][0]
     $errors << 'location_error'
     p("Location did not match with expected result")
   end
 end
 
 And(/^I compare screenshot called "([^"]*)"$/) do |file_name|
-  screenshot_file = Dir["screenshots/#{Time.now.strftime('%d%b')}/#{file_name}**.png"][0]
-  control_file = "control_images/#{file_name}.png"
-  compare_result = MojoMagick::execute('compare', %Q[-metric MAE -format "%[distortion]" #{control_file} #{screenshot_file} control_images/NULL])[:error]
+  screenshot_file = Dir["screenshots/#{Time.now.strftime('%d%b')}/#{$device[:name]}/#{file_name}**.png"][0]
+  control_file = "control_images/#{$device[:name]}/#{file_name}.png"
+  compare_result = MojoMagick::execute('compare', %Q[-metric MAE -format "%[distortion]" #{control_file} #{screenshot_file} control_images/#{$device[:name]}/NULL])[:error]
   compare_result = compare_result[/\(.*?\)/]
   compare_result = compare_result[1..compare_result.length-2]
   p compare_result.to_f
@@ -136,7 +141,12 @@ Then(/^I expect not to find any "([^"]*)" with text "([^"]*)"$/) do |class_name,
 end
 
 Then(/^I touch item with "([^"]*)" id$/) do |id|
-  touch("* id:'#{id}'")
+  begin
+    touch("* id:'#{id}'")
+  rescue Exception => e
+    $errors << "No item with id:#{id}"
+    p "No item with id:#{id}"
+  end
 end
 
 And(/^I set date to (\d+) "([^"]*)" (\d+)$/) do |day, month, year|
@@ -187,9 +197,9 @@ Then(/^I press "([^"]*)" button value of "([^"]*)" times and I take control imag
   n.to_i.times do
     touch(query("* UIButtonLabel marked:'#{btn_txt}'"))
     sleep 0.5
-    screenshot(options = {:name => "screenshots/#{Time.now.strftime("%d%b")}/#{btn_txt}#{append_date("_button_pressed")}_#{i}.png"})
-    screenshot_file = Dir["screenshots/#{Time.now.strftime('%d%b')}/#{btn_txt}#{append_date("_button_pressed")}_#{i}**.png"][0]
-    control_file = "control_images/#{btn_txt}_button_pressed_#{i}.png"
+    screenshot(options = {:name => "screenshots/#{Time.now.strftime("%d%b")}/#{$device[:name]}/#{btn_txt}#{append_date("_button_pressed")}_#{i}.png"})
+    screenshot_file = Dir["screenshots/#{Time.now.strftime('%d%b')}/#{$device[:name]}/#{btn_txt}#{append_date("_button_pressed")}_#{i}**.png"][0]
+    control_file = "control_images/#{$device[:name]}/#{btn_txt}_button_pressed_#{i}.png"
     File.rename(screenshot_file, control_file)
     i += 1
   end
@@ -201,10 +211,10 @@ Then(/^I press "([^"]*)" button value of "([^"]*)" times and I compare screensho
   n.to_i.times do
     touch(query("* UIButtonLabel marked:'#{btn_txt}'"))
     sleep 0.5
-    screenshot_embed(options = {:name => "screenshots/#{Time.now.strftime("%d%b")}/#{btn_txt}#{append_date("_button_pressed")}_#{i}.png"})
-    control_file = "control_images/#{btn_txt}_button_pressed_#{i}.png"
-    screenshot_file = Dir["screenshots/#{Time.now.strftime('%d%b')}/#{btn_txt}#{append_date("_button_pressed")}_#{i}**.png"][0]
-    compare_result = MojoMagick::execute('compare', %Q[-metric MAE -format "%[distortion]" #{control_file} #{screenshot_file} control_images/NULL])[:error]
+    screenshot_embed(options = {:name => "screenshots/#{Time.now.strftime("%d%b")}/#{$device[:name]}/#{btn_txt}#{append_date("_button_pressed")}_#{i}.png"})
+    control_file = "control_images/#{$device[:name]}/#{btn_txt}_button_pressed_#{i}.png"
+    screenshot_file = Dir["screenshots/#{Time.now.strftime('%d%b')}/#{$device[:name]}/#{btn_txt}#{append_date("_button_pressed")}_#{i}**.png"][0]
+    compare_result = MojoMagick::execute('compare', %Q[-metric MAE -format "%[distortion]" #{control_file} #{screenshot_file} control_images/#{$device[:name]}/NULL])[:error]
     compare_result = compare_result[/\(.*?\)/]
     compare_result = compare_result[1..compare_result.length-2]
     p compare_result.to_f
