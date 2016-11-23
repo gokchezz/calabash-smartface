@@ -10,6 +10,7 @@ def do_before_scenario
   $start_time = Time.now.strftime('%H:%M:%S')
   $screencap_index = 0
   FileUtils.mkdir_p("screenshots/#{Time.now.strftime('%d%b')}/#{$device[:name]}")
+  FileUtils.mkdir_p("control_images/#{$device[:name]}")
   FileUtils.mkdir_p("html_reports/#{$device[:name]}")
 end
 
