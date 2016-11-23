@@ -95,7 +95,7 @@ Then(/^I touch "([^"]*)" button$/) do |btn_txt|
   begin
     touch("UIButtonLabel marked:'#{btn_txt}'")
   rescue Exception => e
-    $errors << "No label marked:#{btn_txt}"
+    #$errors << "No label marked:#{btn_txt}"
     p "No label marked:#{btn_txt}"
   end
 end
@@ -144,7 +144,7 @@ Then(/^I touch item with "([^"]*)" id$/) do |id|
   begin
     touch("* id:'#{id}'")
   rescue Exception => e
-    $errors << "No item with id:#{id}"
+    #$errors << "No item with id:#{id}"
     p "No item with id:#{id}"
   end
 end

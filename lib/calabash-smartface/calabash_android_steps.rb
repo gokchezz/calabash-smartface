@@ -120,7 +120,7 @@ And(/^I touch "([^"]*)" button$/) do |btn_txt|
   begin
     touch("SpButton marked:'#{btn_txt}'")
   rescue Exception => e
-    $errors << "No button marked:#{btn_txt}"
+    #$errors << "No button marked:#{btn_txt}"
     p "No button marked:#{btn_txt}"
   end
 end

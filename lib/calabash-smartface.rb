@@ -12,7 +12,7 @@ Then(/^I touch "([^"]*)" with index (\d+)$/) do |class_name, index|
   begin
     touch(query("#{class_name} index:#{index}"))
   rescue Exception => e
-    $errors << "No #{class_name} with index:#{index}"
+    #$errors << "No #{class_name} with index:#{index}"
     p "No #{class_name} with index:#{index}"
   end
 end
@@ -27,7 +27,7 @@ Then(/^I touch any button with text "([^"]*)"$/) do |btn_txt|
   begin
     touch("* marked:'#{btn_txt}'")
   rescue Exception => e
-    $errors << "No * marked:#{btn_txt}"
+    #$errors << "No * marked:#{btn_txt}"
     p "No * marked:#{btn_txt}"
   end
 end
@@ -40,7 +40,7 @@ And(/^I touch "([^"]*)" with text "([^"]*)"$/) do |class_name, txt|
   begin
     touch(query("* #{class_name} marked:'#{txt}'"))
   rescue Exception => e
-    $errors << "No #{class_name} marked:#{txt}"
+    #$errors << "No #{class_name} marked:#{txt}"
     p "No #{class_name} marked:#{txt}"
   end
 end
