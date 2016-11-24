@@ -32,6 +32,9 @@ end
 
 def do_after_scenario
   p "#{$case_count} cases run totally"
+  $errors.each do |error|
+    p error
+  end
   p "Test ended with #{$errors.length} error(s)"
   raise "Test ended with #{$errors.length} error(s)" if $errors.length > 0
 end
@@ -96,7 +99,6 @@ Then(/^I touch "([^"]*)" button$/) do |btn_txt|
   begin
     touch("UIButtonLabel marked:'#{btn_txt}'")
   rescue Exception => e
-    #$errors << "No label marked:#{btn_txt}"
     p "No label marked:#{btn_txt}"
   end
 end
@@ -110,7 +112,7 @@ And(/^I compare location with lat "([^"]*)" and long "([^"]*)"$/) do |lat, long|
   if (phone_lat[0..5] != lat) || (phone_long[0..5] != long)
     screenshot_embed(options = {:name => "screenshots/#{Time.now.strftime("%d%b")}/#{$device[:name]}/location_error.png"})
     screenshot_file = Dir["screenshots/#{Time.now.strftime('%d%b')}/#{$device[:name]}/location_error**.png"][0]
-    $errors << 'location_error'
+    $errors << 'Splash_page'
     p("Location did not match with expected result")
   end
 end
@@ -121,11 +123,10 @@ And(/^I compare screenshot called "([^"]*)"$/) do |file_name|
   compare_result = MojoMagick::execute('compare', %Q[-metric MAE -format "%[distortion]" #{control_file} #{screenshot_file} control_images/#{$device[:name]}/NULL])[:error]
   compare_result = compare_result[/\(.*?\)/]
   compare_result = compare_result[1..compare_result.length-2]
-  p compare_result.to_f
   $case_count += 1
   if compare_result.to_f >= 0.00005
     $errors << file_name
-    p("Screenshot comparision throw an error. Comparision result (#{compare_result}) was expected less than 0.00005")
+    p("Screenshot comparision fails on '#{file_name}'. Comparision result (#{compare_result}) was expected less than 0.00005")
   end
 end
 
@@ -145,7 +146,6 @@ Then(/^I touch item with "([^"]*)" id$/) do |id|
   begin
     touch("* id:'#{id}'")
   rescue Exception => e
-    #$errors << "No item with id:#{id}"
     p "No item with id:#{id}"
   end
 end
@@ -198,8 +198,8 @@ Then(/^I press "([^"]*)" button value of "([^"]*)" times and I take control imag
   n.to_i.times do
     touch(query("* UIButtonLabel marked:'#{btn_txt}'"))
     sleep 0.5
-    screenshot(options = {:name => "screenshots/#{Time.now.strftime("%d%b")}/#{$device[:name]}/#{btn_txt}#{append_date("_button_pressed")}_#{i}.png"})
-    screenshot_file = Dir["screenshots/#{Time.now.strftime('%d%b')}/#{$device[:name]}/#{btn_txt}#{append_date("_button_pressed")}_#{i}**.png"][0]
+    screenshot(options = {:prefix => "control_images/#{$device[:name]}", :name => "/#{btn_txt}_button_pressed_#{i}.png"})
+    screenshot_file = Dir["control_images/#{$device[:name]}/#{btn_txt}_button_pressed_#{i}_**.png"][0]
     control_file = "control_images/#{$device[:name]}/#{btn_txt}_button_pressed_#{i}.png"
     File.rename(screenshot_file, control_file)
     i += 1
@@ -212,16 +212,15 @@ Then(/^I press "([^"]*)" button value of "([^"]*)" times and I compare screensho
   n.to_i.times do
     touch(query("* UIButtonLabel marked:'#{btn_txt}'"))
     sleep 0.5
-    screenshot_embed(options = {:name => "screenshots/#{Time.now.strftime("%d%b")}/#{$device[:name]}/#{btn_txt}#{append_date("_button_pressed")}_#{i}.png"})
+    screenshot_embed(options = {:name => "screenshots/#{Time.now.strftime("%d%b")}/#{$device[:name]}/#{btn_txt}_button_pressed_#{i}.png"})
     control_file = "control_images/#{$device[:name]}/#{btn_txt}_button_pressed_#{i}.png"
-    screenshot_file = Dir["screenshots/#{Time.now.strftime('%d%b')}/#{$device[:name]}/#{btn_txt}#{append_date("_button_pressed")}_#{i}**.png"][0]
+    screenshot_file = Dir["screenshots/#{Time.now.strftime('%d%b')}/#{$device[:name]}/#{btn_txt}_button_pressed_#{i}_**.png"][0]
     compare_result = MojoMagick::execute('compare', %Q[-metric MAE -format "%[distortion]" #{control_file} #{screenshot_file} control_images/#{$device[:name]}/NULL])[:error]
     compare_result = compare_result[/\(.*?\)/]
     compare_result = compare_result[1..compare_result.length-2]
-    p compare_result.to_f
     if compare_result.to_f >= 0.00005
       $errors << "#{btn_txt}_button_pressed_#{i}"
-      p("Screenshot comparision throw an error. Comparision result (#{compare_result}) was expected less than 0.00005")
+      p("Screenshot comparision fails on #{btn_txt} button at #{i}th press. Comparision result (#{compare_result}) was expected less than 0.00005")
     end
     i += 1
     $case_count += 1

@@ -52,6 +52,9 @@ end
 
 def do_after_scenario
   p "#{$case_count} cases run totally"
+  $errors.each do |error|
+    p error
+  end
   p "Test ended with #{$errors.length} error(s)"
   raise "Test ended with #{$errors.length} error(s)" if $errors.length > 0
 end
@@ -120,7 +123,6 @@ And(/^I touch "([^"]*)" button$/) do |btn_txt|
   begin
     touch("SpButton marked:'#{btn_txt}'")
   rescue Exception => e
-    #$errors << "No button marked:#{btn_txt}"
     p "No button marked:#{btn_txt}"
   end
 end
@@ -157,10 +159,9 @@ Then(/^I press "([^"]*)" button (\d+) times and compare screenshots$/) do |btn_t
     compare_result = MojoMagick::execute('compare', %Q[-metric MAE -format "%[distortion]" #{control_file} #{screenshot_file} control_images/NULL])[:error]
     compare_result = compare_result[/\(.*?\)/]
     compare_result = compare_result[1..compare_result.length-2]
-    p compare_result.to_f
     if compare_result.to_f >= 0.00005
       $errors << "#{btn_txt}_button_pressed_#{i}"
-      p("Screenshot comparision throw an error. Comparision result (#{compare_result}) was expected less than 0.00005")
+      p("Screenshot comparision fails on '#{btn_txt}' at #{i}th press. Comparision result (#{compare_result}) was expected less than 0.00005")
     end
     i += 1
   end
@@ -180,10 +181,9 @@ Then(/^I press "([^"]*)" with index (\d+), (\d+) times and compare screenshots c
     compare_result = MojoMagick::execute('compare', %Q[-metric MAE -format "%[distortion]" #{control_file} #{files[0]} control_images/NULL])[:error]
     compare_result = compare_result[/\(.*?\)/]
     compare_result = compare_result[1..compare_result.length-2]
-    p compare_result.to_f
     if compare_result.to_f >= 0.00005
       $errors << screenshot_name
-      p("Screenshot comparision throw an error. Comparision result (#{compare_result}) was expected less than 0.00005")
+      p("Screenshot comparision fails on '#{file_name}' at #{i}th press. Comparision result (#{compare_result}) was expected less than 0.00005")
     end
     i += 1
   end
@@ -223,10 +223,9 @@ And(/^I compare screenshot called "([^"]*)"$/) do |file_name|
   else
     compare_result = compare_result[/\(.*?\)/]
     compare_result = compare_result[1..compare_result.length-2]
-    p compare_result.to_f
     if compare_result.to_f >= 0.00005
       $errors << file_name
-      p("Screenshot comparision throw an error. Comparision result (#{compare_result}) was expected less than 0.00005")
+      p("Screenshot comparision fails on '#{file_name}'. Comparision result (#{compare_result}) was expected less than 0.00005")
     end
   end
   $case_count += 1
@@ -341,10 +340,9 @@ Then(/^I press "([^"]*)" button value of "([^"]*)" times and I compare screensho
     compare_result = MojoMagick::execute('compare', %Q[-metric MAE -format "%[distortion]" #{control_file} #{screenshot_file} control_images/NULL])[:error]
     compare_result = compare_result[/\(.*?\)/]
     compare_result = compare_result[1..compare_result.length-2]
-    p compare_result.to_f
     if compare_result.to_f >= 0.00005
       $errors << "#{btn_txt}_button_pressed_#{i}"
-      p("Screenshot comparision throw an error. Comparision result (#{compare_result}) was expected less than 0.00005")
+      p("Screenshot comparision fails on '#{btn_txt}' at #{i}th press. Comparision result (#{compare_result}) was expected less than 0.00005")
     end
     i += 1
     $case_count += 1
