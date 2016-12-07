@@ -45,7 +45,7 @@ def save_results_to_file(root_path, test_name)
   device_name = "#{device} - #{version} - #{test_name}"
   report_file = "https://smartfacecdn.blob.core.windows.net/test-automation/#{Time.now.strftime('%d-%m-%y')}/#{test_name}%20on%20#{device.gsub(' ', '%20')}.html"
   save_results_on_existing_file(root_path, device_name, $case_count, $start_time, $errors, "#{report_file}")
-  device_name
+  return device_name
 end
 
 def get_device
